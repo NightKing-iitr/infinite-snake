@@ -11,21 +11,37 @@
       <header class="game-header">
         <div>
           <h1>Infinite Snake</h1>
-          <p>Use the arrow keys to move. Wrap around the edges and avoid yourself.</p>
+          <p>Arrow keys move. Space pauses. Wrap around the edges and avoid yourself.</p>
         </div>
 
-        <div class="score-board" aria-live="polite">
-          <span>Score</span>
-          <strong id="score">0</strong>
+        <div class="score-row" aria-live="polite">
+          <div class="score-board">
+            <span>Score</span>
+            <strong id="score">0</strong>
+          </div>
+          <div class="score-board">
+            <span>Best</span>
+            <strong id="highScore">0</strong>
+          </div>
         </div>
       </header>
 
-      <canvas id="gameCanvas" width="640" height="640" aria-label="Snake game board"></canvas>
+      <section class="board-wrap" aria-label="Snake game">
+        <canvas id="gameCanvas" width="640" height="640" aria-label="Snake game board"></canvas>
 
-      <footer class="game-footer">
-        <button id="restartButton" type="button">Restart</button>
-        <p id="status">Press an arrow key to start.</p>
-      </footer>
+        <div class="game-overlay" id="gameOverlay">
+          <div class="overlay-panel">
+            <p class="overlay-kicker" id="overlayKicker">Ready</p>
+            <h2 id="overlayTitle">Infinite Snake</h2>
+            <p id="overlayMessage">Press Start or an arrow key to begin.</p>
+            <div class="overlay-actions">
+              <button id="startButton" type="button">Start</button>
+              <button id="overlayRestartButton" type="button">Restart</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
     </main>
 
     <script src="script.js"></script>

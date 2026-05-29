@@ -1,15 +1,25 @@
 const canvas = document.getElementById("gameCanvas");
 const context = canvas.getContext("2d");
 const scoreElement = document.getElementById("score");
-const statusElement = document.getElementById("status");
-const restartButton = document.getElementById("restartButton");
+const highScoreElement = document.getElementById("highScore");
+const startButton = document.getElementById("startButton");
+const overlayRestartButton = document.getElementById("overlayRestartButton");
+const gameOverlay = document.getElementById("gameOverlay");
+const overlayKicker = document.getElementById("overlayKicker");
+const overlayTitle = document.getElementById("overlayTitle");
+const overlayMessage = document.getElementById("overlayMessage");
 
-// The board is measured in grid cells. Each cell is drawn as one square tile.
 const cellSize = 20;
 const tileCount = canvas.width / cellSize;
-
-// Milliseconds between logical snake steps. Drawing still happens smoothly.
 const moveDelay = 90;
+const highScoreKey = "infinite-snake-high-score";
+
+const states = {
+  START: "start",
+  PLAYING: "playing",
+  PAUSED: "paused",
+  GAME_OVER: "gameover",
+};
 
 const directions = {
   ArrowUp: { x: 0, y: -1 },
@@ -23,11 +33,28 @@ let food;
 let direction;
 let nextDirection;
 let score;
-let gameOver;
-let isPlaying;
+let highScore;
+let gameState;
 let lastMoveTime;
 
-function resetGame() {
+function getStoredHighScore() {
+  try {
+    const savedScore = Number(localStorage.getItem(highScoreKey));
+    return Number.isFinite(savedScore) ? savedScore : 0;
+  } catch (error) {
+    return 0;
+  }
+}
+
+function saveHighScore() {
+  try {
+    localStorage.setItem(highScoreKey, String(highScore));
+  } catch (error) {
+    // The game remains playable if browser storage is unavailable.
+  }
+}
+
+function resetGame(nextState = states.START) {
   snake = [
     { x: 8, y: 10 },
     { x: 7, y: 10 },
@@ -37,20 +64,72 @@ function resetGame() {
   direction = { x: 1, y: 0 };
   nextDirection = { x: 1, y: 0 };
   score = 0;
-  gameOver = false;
-  isPlaying = false;
   lastMoveTime = 0;
-
-  scoreElement.textContent = score;
-  statusElement.textContent = "Press an arrow key to start.";
   food = createFood();
-  drawGame(0);
+  setGameState(nextState);
+  updateScore();
+  drawGame(1);
+}
+
+function setGameState(nextState) {
+  gameState = nextState;
+
+  if (gameState === states.START) {
+    showOverlay("Ready", "Infinite Snake", "Collect food, wrap the board, and do not hit yourself.");
+    startButton.textContent = "Start";
+    overlayRestartButton.hidden = true;
+    return;
+  }
+
+  if (gameState === states.PAUSED) {
+    showOverlay("Paused", "Game Paused", "Press Space or Resume to keep playing.");
+    startButton.textContent = "Resume";
+    overlayRestartButton.hidden = false;
+    return;
+  }
+
+  if (gameState === states.GAME_OVER) {
+    showOverlay("Game Over", "Final Score: " + score, "Best score: " + highScore);
+    startButton.textContent = "Play Again";
+    overlayRestartButton.hidden = false;
+    return;
+  }
+
+  gameOverlay.classList.remove("is-visible");
+}
+
+function showOverlay(kicker, title, message) {
+  overlayKicker.textContent = kicker;
+  overlayTitle.textContent = title;
+  overlayMessage.textContent = message;
+  gameOverlay.classList.add("is-visible");
+}
+
+function startGame() {
+  if (gameState === states.GAME_OVER) {
+    resetGame(states.PLAYING);
+    return;
+  }
+
+  setGameState(states.PLAYING);
+  lastMoveTime = 0;
+}
+
+function restartGame() {
+  resetGame(states.PLAYING);
+}
+
+function togglePause() {
+  if (gameState === states.PLAYING) {
+    setGameState(states.PAUSED);
+  } else if (gameState === states.PAUSED) {
+    startGame();
+  }
 }
 
 function createFood() {
   let newFood;
 
-  // Keep trying random cells until the food is not inside the snake.
   do {
     newFood = {
       x: Math.floor(Math.random() * tileCount),
@@ -62,6 +141,12 @@ function createFood() {
 }
 
 function handleKeyDown(event) {
+  if (event.code === "Space") {
+    event.preventDefault();
+    togglePause();
+    return;
+  }
+
   const chosenDirection = directions[event.key];
 
   if (!chosenDirection) {
@@ -70,14 +155,12 @@ function handleKeyDown(event) {
 
   event.preventDefault();
 
-  if (gameOver) {
-    resetGame();
+  if (gameState === states.START || gameState === states.GAME_OVER) {
+    resetGame(states.PLAYING);
+  } else if (gameState === states.PAUSED) {
+    startGame();
   }
 
-  isPlaying = true;
-  statusElement.textContent = "Playing";
-
-  // Prevent reversing directly into the second snake segment.
   const wouldReverse =
     chosenDirection.x + direction.x === 0 && chosenDirection.y + direction.y === 0;
 
@@ -106,29 +189,34 @@ function updateGame() {
 
   if (ateFood) {
     score += 1;
-    scoreElement.textContent = score;
+    updateScore();
     food = createFood();
   } else {
-    // Removing the tail keeps the snake the same length when it did not eat.
     snake.pop();
   }
 }
 
+function updateScore() {
+  if (score > highScore) {
+    highScore = score;
+    saveHighScore();
+  }
+
+  scoreElement.textContent = score;
+  highScoreElement.textContent = highScore;
+}
+
 function wrapPosition(position) {
-  // Modulo wrapping creates the infinite-world behavior at every edge.
   return (position + tileCount) % tileCount;
 }
 
 function hasSelfCollision(head, ateFood) {
-  // If food was not eaten, the tail moves away, so the head may enter that cell.
   const bodyToCheck = ateFood ? snake : snake.slice(0, -1);
   return bodyToCheck.some((segment) => segment.x === head.x && segment.y === head.y);
 }
 
 function endGame() {
-  gameOver = true;
-  isPlaying = false;
-  statusElement.textContent = "Game over. Press an arrow key or Restart.";
+  setGameState(states.GAME_OVER);
 }
 
 function drawGame(progress) {
@@ -138,11 +226,24 @@ function drawGame(progress) {
 }
 
 function drawBackground() {
-  context.fillStyle = "#020617";
+  const background = context.createLinearGradient(0, 0, canvas.width, canvas.height);
+  background.addColorStop(0, "#07111f");
+  background.addColorStop(0.52, "#10251f");
+  background.addColorStop(1, "#160f24");
+
+  context.fillStyle = background;
   context.fillRect(0, 0, canvas.width, canvas.height);
 
-  // A subtle grid helps beginners see the tile-based movement.
-  context.strokeStyle = "#0f172a";
+  for (let y = 0; y < tileCount; y += 1) {
+    for (let x = 0; x < tileCount; x += 1) {
+      if ((x + y) % 2 === 0) {
+        context.fillStyle = "rgb(255 255 255 / 0.025)";
+        context.fillRect(x * cellSize, y * cellSize, cellSize, cellSize);
+      }
+    }
+  }
+
+  context.strokeStyle = "rgb(255 255 255 / 0.055)";
   context.lineWidth = 1;
 
   for (let position = 0; position <= canvas.width; position += cellSize) {
@@ -159,37 +260,84 @@ function drawBackground() {
 }
 
 function drawFood() {
-  const padding = 4;
+  const centerX = food.x * cellSize + cellSize / 2;
+  const centerY = food.y * cellSize + cellSize / 2;
+  const glow = context.createRadialGradient(centerX, centerY, 2, centerX, centerY, cellSize);
+
+  glow.addColorStop(0, "rgb(251 113 133 / 0.9)");
+  glow.addColorStop(1, "rgb(251 113 133 / 0)");
+
+  context.fillStyle = glow;
+  context.beginPath();
+  context.arc(centerX, centerY, cellSize, 0, Math.PI * 2);
+  context.fill();
 
   context.fillStyle = "#fb7185";
   context.beginPath();
-  context.arc(
-    food.x * cellSize + cellSize / 2,
-    food.y * cellSize + cellSize / 2,
-    cellSize / 2 - padding,
-    0,
-    Math.PI * 2
-  );
+  context.arc(centerX, centerY, cellSize / 2 - 4, 0, Math.PI * 2);
+  context.fill();
+
+  context.fillStyle = "#fecdd3";
+  context.beginPath();
+  context.arc(centerX - 3, centerY - 3, 3, 0, Math.PI * 2);
   context.fill();
 }
 
 function drawSnake(progress) {
   snake.forEach((segment, index) => {
     const previousSegment = snake[index + 1] || segment;
-
-    // Interpolate between the previous and current cell for smoother movement.
     const drawX = interpolateWrapped(previousSegment.x, segment.x, progress) * cellSize;
     const drawY = interpolateWrapped(previousSegment.y, segment.y, progress) * cellSize;
+    const inset = index === 0 ? 2 : 3;
+    const size = cellSize - inset * 2;
 
-    context.fillStyle = index === 0 ? "#5eead4" : "#22c55e";
-    context.fillRect(drawX + 2, drawY + 2, cellSize - 4, cellSize - 4);
+    context.shadowColor = index === 0 ? "rgb(94 234 212 / 0.45)" : "rgb(34 197 94 / 0.25)";
+    context.shadowBlur = index === 0 ? 16 : 8;
+    context.fillStyle = index === 0 ? "#5eead4" : getBodyColor(index);
+    roundedRect(drawX + inset, drawY + inset, size, size, 5);
+    context.fill();
+    context.shadowBlur = 0;
+
+    if (index === 0) {
+      drawEyes(drawX, drawY);
+    }
   });
+}
+
+function getBodyColor(index) {
+  return index % 2 === 0 ? "#22c55e" : "#16a34a";
+}
+
+function drawEyes(x, y) {
+  const eyeOffsetX = direction.x === 0 ? 5 : direction.x > 0 ? 12 : 5;
+  const secondEyeOffsetX = direction.x === 0 ? 12 : eyeOffsetX;
+  const eyeOffsetY = direction.y === 0 ? 5 : direction.y > 0 ? 12 : 5;
+  const secondEyeOffsetY = direction.y === 0 ? 12 : eyeOffsetY;
+
+  context.fillStyle = "#042f2e";
+  context.beginPath();
+  context.arc(x + eyeOffsetX, y + eyeOffsetY, 2.3, 0, Math.PI * 2);
+  context.arc(x + secondEyeOffsetX, y + secondEyeOffsetY, 2.3, 0, Math.PI * 2);
+  context.fill();
+}
+
+function roundedRect(x, y, width, height, radius) {
+  context.beginPath();
+  context.moveTo(x + radius, y);
+  context.lineTo(x + width - radius, y);
+  context.quadraticCurveTo(x + width, y, x + width, y + radius);
+  context.lineTo(x + width, y + height - radius);
+  context.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+  context.lineTo(x + radius, y + height);
+  context.quadraticCurveTo(x, y + height, x, y + height - radius);
+  context.lineTo(x, y + radius);
+  context.quadraticCurveTo(x, y, x + radius, y);
+  context.closePath();
 }
 
 function interpolateWrapped(from, to, progress) {
   let distance = to - from;
 
-  // Smooth the visual jump when the snake wraps across an edge.
   if (distance > tileCount / 2) {
     distance -= tileCount;
   } else if (distance < -tileCount / 2) {
@@ -205,18 +353,22 @@ function gameLoop(timestamp) {
     lastMoveTime = timestamp;
   }
 
-  if (isPlaying && !gameOver && timestamp - lastMoveTime >= moveDelay) {
+  if (gameState === states.PLAYING && timestamp - lastMoveTime >= moveDelay) {
     updateGame();
     lastMoveTime = timestamp;
   }
 
-  const progress = isPlaying ? Math.min((timestamp - lastMoveTime) / moveDelay, 1) : 1;
+  const progress =
+    gameState === states.PLAYING ? Math.min((timestamp - lastMoveTime) / moveDelay, 1) : 1;
+
   drawGame(progress);
   requestAnimationFrame(gameLoop);
 }
 
 document.addEventListener("keydown", handleKeyDown);
-restartButton.addEventListener("click", resetGame);
+startButton.addEventListener("click", startGame);
+overlayRestartButton.addEventListener("click", restartGame);
 
+highScore = getStoredHighScore();
 resetGame();
 requestAnimationFrame(gameLoop);
