@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Infinite Snake</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <main class="game-shell">
+      <header class="game-header">
+        <div>
+          <h1>Infinite Snake</h1>
+          <p>Use the arrow keys to move. Wrap around the edges and avoid yourself.</p>
+        </div>
+
+        <div class="score-board" aria-live="polite">
+          <span>Score</span>
+          <strong id="score">0</strong>
+        </div>
+      </header>
+
+      <canvas id="gameCanvas" width="640" height="640" aria-label="Snake game board"></canvas>
+
+      <footer class="game-footer">
+        <button id="restartButton" type="button">Restart</button>
+        <p id="status">Press an arrow key to start.</p>
+      </footer>
+    </main>
+
+    <script src="script.js"></script>
+  </body>
+</html>
