@@ -186,47 +186,12 @@ button[hidden] {
   display: none;
   align-items: center;
   justify-content: center;
-  gap: 18px;
   touch-action: manipulation;
 }
 
-.direction-pad {
-  display: grid;
-  grid-template-columns: repeat(3, 54px);
-  grid-template-rows: repeat(3, 42px);
-  gap: 6px;
-}
-
-.touch-button,
 .touch-pause {
-  min-width: 54px;
-  min-height: 42px;
-  padding: 0 12px;
-}
-
-.touch-up {
-  grid-column: 2;
-  grid-row: 1;
-}
-
-.touch-left {
-  grid-column: 1;
-  grid-row: 2;
-}
-
-.touch-right {
-  grid-column: 3;
-  grid-row: 2;
-}
-
-.touch-down {
-  grid-column: 2;
-  grid-row: 3;
-}
-
-.touch-pause {
-  min-width: 96px;
-  align-self: center;
+  min-width: 120px;
+  min-height: 48px;
   background: #fbbf24;
   box-shadow: 0 10px 24px rgb(251 191 36 / 0.18);
 }
@@ -287,20 +252,9 @@ button[hidden] {
     gap: 12px;
   }
 
-  .direction-pad {
-    grid-template-columns: repeat(3, 48px);
-    grid-template-rows: repeat(3, 38px);
-  }
-
-  .touch-button,
   .touch-pause {
-    min-width: 48px;
-    min-height: 38px;
-    padding: 0 10px;
-    font-size: 0.78rem;
-  }
-
-  .touch-pause {
-    min-width: 82px;
+    min-width: 100px;
+    min-height: 42px;
+    font-size: 0.9rem;
   }
 }

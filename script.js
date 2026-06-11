@@ -8,10 +8,6 @@ const gameOverlay = document.getElementById("gameOverlay");
 const overlayKicker = document.getElementById("overlayKicker");
 const overlayTitle = document.getElementById("overlayTitle");
 const overlayMessage = document.getElementById("overlayMessage");
-const touchUpButton = document.getElementById("touchUpButton");
-const touchDownButton = document.getElementById("touchDownButton");
-const touchLeftButton = document.getElementById("touchLeftButton");
-const touchRightButton = document.getElementById("touchRightButton");
 const touchPauseButton = document.getElementById("touchPauseButton");
 
 const cellSize = 20;
@@ -44,6 +40,12 @@ let gameState;
 let lastMoveTime;
 let touchStartX = 0;
 let touchStartY = 0;
+
+function triggerHaptic(pattern) {
+  if (typeof navigator !== "undefined" && navigator.vibrate) {
+    navigator.vibrate(pattern);
+  }
+}
 
 function getStoredHighScore() {
   try {
@@ -214,12 +216,6 @@ function handleTouchEnd(event) {
   }
 }
 
-function bindDirectionButton(button, chosenDirection) {
-  button.addEventListener("click", () => {
-    changeDirection(chosenDirection);
-  });
-}
-
 function updateGame() {
   direction = nextDirection;
 
@@ -241,6 +237,7 @@ function updateGame() {
   if (ateFood) {
     score += 1;
     updateScore();
+    triggerHaptic(20);
     food = createFood();
   } else {
     snake.pop();
@@ -268,6 +265,7 @@ function hasSelfCollision(head, ateFood) {
 
 function endGame() {
   setGameState(states.GAME_OVER);
+  triggerHaptic([100, 50, 100]);
 }
 
 function drawGame(progress) {
@@ -422,10 +420,6 @@ canvas.addEventListener("touchend", handleTouchEnd, { passive: false });
 startButton.addEventListener("click", startGame);
 overlayRestartButton.addEventListener("click", restartGame);
 touchPauseButton.addEventListener("click", togglePause);
-bindDirectionButton(touchUpButton, directions.ArrowUp);
-bindDirectionButton(touchDownButton, directions.ArrowDown);
-bindDirectionButton(touchLeftButton, directions.ArrowLeft);
-bindDirectionButton(touchRightButton, directions.ArrowRight);
 
 highScore = getStoredHighScore();
 resetGame();

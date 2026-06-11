@@ -2,7 +2,7 @@
 
 ## Current State
 
-Infinite Snake is currently a static, single-player browser game. It runs directly from `index.html` with no build step, package install, or backend server. The game logic is in `script.js`, rendering is done on a canvas, and styling is handled by `style.css`.
+Infinite Snake is a polished, static single-player browser game and mobile-friendly too. It runs directly from `index.html` with no build step, package install, or backend server. The game logic is in `script.js`, rendering is done on a canvas, and styling is handled by `style.css`.
 
 ## Completed Features
 
@@ -18,6 +18,9 @@ Infinite Snake is currently a static, single-player browser game. It runs direct
 - [x] Glowing food and improved board visuals
 - [x] Rounded snake body with head eyes
 - [x] Responsive no-scroll layout
+- [x] Swipe gestures for mobile movement
+- [x] Haptic feedback (vibration) on food and game over
+- [x] Simplified mobile UI (gestures over buttons)
 - [x] README with run instructions and controls
 - [x] Contributor guide in `AGENTS.md`
 
