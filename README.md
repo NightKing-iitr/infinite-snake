@@ -11,7 +11,10 @@ No build step, package install, or local server is required.
 ## Controls
 
 - Arrow keys: Move the snake
+- Swipe on the board: Move the snake on touch screens
+- Touch direction buttons: Move the snake on mobile
 - Space: Pause or resume
+- Pause button: Pause or resume on touch screens
 - Start: Begin from the start screen
 - Restart: Start a new game from the pause or game-over overlay
 

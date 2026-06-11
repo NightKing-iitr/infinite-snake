@@ -11,7 +11,7 @@
       <header class="game-header">
         <div>
           <h1>Infinite Snake</h1>
-          <p>Arrow keys move. Space pauses. Wrap around the edges and avoid yourself.</p>
+          <p>Swipe, tap the controls, or use arrow keys. Wrap around the edges and avoid yourself.</p>
         </div>
 
         <div class="score-row" aria-live="polite">
@@ -33,13 +33,46 @@
           <div class="overlay-panel">
             <p class="overlay-kicker" id="overlayKicker">Ready</p>
             <h2 id="overlayTitle">Infinite Snake</h2>
-            <p id="overlayMessage">Press Start or an arrow key to begin.</p>
+            <p id="overlayMessage">Press Start, swipe, or choose a direction to begin.</p>
             <div class="overlay-actions">
               <button id="startButton" type="button">Start</button>
               <button id="overlayRestartButton" type="button">Restart</button>
             </div>
           </div>
         </div>
+      </section>
+
+      <section class="touch-controls" aria-label="Touch controls">
+        <div class="direction-pad" aria-label="Direction controls">
+          <button id="touchUpButton" class="touch-button touch-up" type="button" aria-label="Move up">
+            Up
+          </button>
+          <button
+            id="touchLeftButton"
+            class="touch-button touch-left"
+            type="button"
+            aria-label="Move left"
+          >
+            Left
+          </button>
+          <button
+            id="touchRightButton"
+            class="touch-button touch-right"
+            type="button"
+            aria-label="Move right"
+          >
+            Right
+          </button>
+          <button
+            id="touchDownButton"
+            class="touch-button touch-down"
+            type="button"
+            aria-label="Move down"
+          >
+            Down
+          </button>
+        </div>
+        <button id="touchPauseButton" class="touch-pause" type="button">Pause</button>
       </section>
 
     </main>
