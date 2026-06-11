@@ -8,11 +8,17 @@ const gameOverlay = document.getElementById("gameOverlay");
 const overlayKicker = document.getElementById("overlayKicker");
 const overlayTitle = document.getElementById("overlayTitle");
 const overlayMessage = document.getElementById("overlayMessage");
+const touchUpButton = document.getElementById("touchUpButton");
+const touchDownButton = document.getElementById("touchDownButton");
+const touchLeftButton = document.getElementById("touchLeftButton");
+const touchRightButton = document.getElementById("touchRightButton");
+const touchPauseButton = document.getElementById("touchPauseButton");
 
 const cellSize = 20;
 const tileCount = canvas.width / cellSize;
 const moveDelay = 90;
 const highScoreKey = "infinite-snake-high-score";
+const minSwipeDistance = 30;
 
 const states = {
   START: "start",
@@ -36,6 +42,8 @@ let score;
 let highScore;
 let gameState;
 let lastMoveTime;
+let touchStartX = 0;
+let touchStartY = 0;
 
 function getStoredHighScore() {
   try {
@@ -73,6 +81,7 @@ function resetGame(nextState = states.START) {
 
 function setGameState(nextState) {
   gameState = nextState;
+  updateTouchPauseButton();
 
   if (gameState === states.START) {
     showOverlay("Ready", "Infinite Snake", "Collect food, wrap the board, and do not hit yourself.");
@@ -82,7 +91,7 @@ function setGameState(nextState) {
   }
 
   if (gameState === states.PAUSED) {
-    showOverlay("Paused", "Game Paused", "Press Space or Resume to keep playing.");
+    showOverlay("Paused", "Game Paused", "Press Space, Resume, or a direction to keep playing.");
     startButton.textContent = "Resume";
     overlayRestartButton.hidden = false;
     return;
@@ -127,6 +136,14 @@ function togglePause() {
   }
 }
 
+function updateTouchPauseButton() {
+  if (!touchPauseButton) {
+    return;
+  }
+
+  touchPauseButton.textContent = gameState === states.PAUSED ? "Resume" : "Pause";
+}
+
 function createFood() {
   let newFood;
 
@@ -154,7 +171,10 @@ function handleKeyDown(event) {
   }
 
   event.preventDefault();
+  changeDirection(chosenDirection);
+}
 
+function changeDirection(chosenDirection) {
   if (gameState === states.START || gameState === states.GAME_OVER) {
     resetGame(states.PLAYING);
   } else if (gameState === states.PAUSED) {
@@ -167,6 +187,37 @@ function handleKeyDown(event) {
   if (!wouldReverse) {
     nextDirection = chosenDirection;
   }
+}
+
+function handleTouchStart(event) {
+  const touch = event.changedTouches[0];
+
+  touchStartX = touch.clientX;
+  touchStartY = touch.clientY;
+}
+
+function handleTouchEnd(event) {
+  const touch = event.changedTouches[0];
+  const deltaX = touch.clientX - touchStartX;
+  const deltaY = touch.clientY - touchStartY;
+
+  if (Math.max(Math.abs(deltaX), Math.abs(deltaY)) < minSwipeDistance) {
+    return;
+  }
+
+  event.preventDefault();
+
+  if (Math.abs(deltaX) > Math.abs(deltaY)) {
+    changeDirection(deltaX > 0 ? directions.ArrowRight : directions.ArrowLeft);
+  } else {
+    changeDirection(deltaY > 0 ? directions.ArrowDown : directions.ArrowUp);
+  }
+}
+
+function bindDirectionButton(button, chosenDirection) {
+  button.addEventListener("click", () => {
+    changeDirection(chosenDirection);
+  });
 }
 
 function updateGame() {
@@ -366,8 +417,15 @@ function gameLoop(timestamp) {
 }
 
 document.addEventListener("keydown", handleKeyDown);
+canvas.addEventListener("touchstart", handleTouchStart, { passive: true });
+canvas.addEventListener("touchend", handleTouchEnd, { passive: false });
 startButton.addEventListener("click", startGame);
 overlayRestartButton.addEventListener("click", restartGame);
+touchPauseButton.addEventListener("click", togglePause);
+bindDirectionButton(touchUpButton, directions.ArrowUp);
+bindDirectionButton(touchDownButton, directions.ArrowDown);
+bindDirectionButton(touchLeftButton, directions.ArrowLeft);
+bindDirectionButton(touchRightButton, directions.ArrowRight);
 
 highScore = getStoredHighScore();
 resetGame();
