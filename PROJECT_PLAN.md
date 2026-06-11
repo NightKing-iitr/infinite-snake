@@ -21,6 +21,7 @@ Infinite Snake is a polished, static single-player browser game and mobile-frien
 - [x] Swipe gestures for mobile movement
 - [x] Haptic feedback (vibration) on food and game over
 - [x] Simplified mobile UI (gestures over buttons)
+- [x] Background music with mute toggle
 - [x] README with run instructions and controls
 - [x] Contributor guide in `AGENTS.md`
 

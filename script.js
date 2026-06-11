@@ -9,6 +9,12 @@ const overlayKicker = document.getElementById("overlayKicker");
 const overlayTitle = document.getElementById("overlayTitle");
 const overlayMessage = document.getElementById("overlayMessage");
 const touchPauseButton = document.getElementById("touchPauseButton");
+const muteButton = document.getElementById("muteButton");
+const muteIcon = document.getElementById("muteIcon");
+
+const bgMusic = new Audio("http://incompetech.com/music/royalty-free/mp3-uw/Monkeys%20Spinning%20Monkeys.mp3");
+bgMusic.loop = true;
+let isMuted = false;
 
 const cellSize = 20;
 const tileCount = canvas.width / cellSize;
@@ -44,6 +50,29 @@ let touchStartY = 0;
 function triggerHaptic(pattern) {
   if (typeof navigator !== "undefined" && navigator.vibrate) {
     navigator.vibrate(pattern);
+  }
+}
+
+function playMusic() {
+  if (!isMuted && gameState === states.PLAYING) {
+    bgMusic.play().catch(() => {
+      // Browsers block autoplay until user interaction (e.g., clicking Start).
+    });
+  }
+}
+
+function pauseMusic() {
+  bgMusic.pause();
+}
+
+function toggleMute() {
+  isMuted = !isMuted;
+  muteIcon.textContent = isMuted ? "🔇" : "🔊";
+
+  if (isMuted) {
+    pauseMusic();
+  } else if (gameState === states.PLAYING) {
+    playMusic();
   }
 }
 
@@ -86,6 +115,7 @@ function setGameState(nextState) {
   updateTouchPauseButton();
 
   if (gameState === states.START) {
+    pauseMusic();
     showOverlay("Ready", "Infinite Snake", "Collect food, wrap the board, and do not hit yourself.");
     startButton.textContent = "Start";
     overlayRestartButton.hidden = true;
@@ -93,6 +123,7 @@ function setGameState(nextState) {
   }
 
   if (gameState === states.PAUSED) {
+    pauseMusic();
     showOverlay("Paused", "Game Paused", "Press Space, Resume, or a direction to keep playing.");
     startButton.textContent = "Resume";
     overlayRestartButton.hidden = false;
@@ -100,12 +131,14 @@ function setGameState(nextState) {
   }
 
   if (gameState === states.GAME_OVER) {
+    pauseMusic();
     showOverlay("Game Over", "Final Score: " + score, "Best score: " + highScore);
     startButton.textContent = "Play Again";
     overlayRestartButton.hidden = false;
     return;
   }
 
+  playMusic();
   gameOverlay.classList.remove("is-visible");
 }
 
@@ -420,6 +453,7 @@ canvas.addEventListener("touchend", handleTouchEnd, { passive: false });
 startButton.addEventListener("click", startGame);
 overlayRestartButton.addEventListener("click", restartGame);
 touchPauseButton.addEventListener("click", togglePause);
+muteButton.addEventListener("click", toggleMute);
 
 highScore = getStoredHighScore();
 resetGame();
