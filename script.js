@@ -12,7 +12,7 @@ const touchPauseButton = document.getElementById("touchPauseButton");
 const muteButton = document.getElementById("muteButton");
 const muteIcon = document.getElementById("muteIcon");
 
-const bgMusic = new Audio("http://incompetech.com/music/royalty-free/mp3-uw/Monkeys%20Spinning%20Monkeys.mp3");
+const bgMusic = new Audio("game_files/sample_music.mp3");
 bgMusic.loop = true;
 let isMuted = false;
 
